@@ -1,0 +1,135 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                         Clean Trading Sessions indicator                                         |
+//+------------------------------------------------------------------+
+//|                                                     forexroboteasy.com                                               |
+//+------------------------------------------------------------------+
+//|                                                 Forex Robot Easy Team                                              |
+//+------------------------------------------------------------------+
+
+#property indicator_chart_window
+#property indicator_buffers 3
+#property indicator_color1 Red
+#property indicator_color2 Yellow
+#property indicator_color3 Green
+
+//--- indicator buffers
+double UpBuffer[];
+double DownBuffer[];
+double NeutralBuffer[];
+
+//--- global variables
+datetime LondonOpen;
+datetime LondonClose;
+datetime NewYorkOpen;
+datetime NewYorkClose;
+datetime TokyoOpen;
+datetime TokyoClose;
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    //--- set indicator buffers
+    SetIndexBuffer(0, UpBuffer);
+    SetIndexBuffer(1, DownBuffer);
+    SetIndexBuffer(2, NeutralBuffer);
+    
+    //--- set indicator labels
+    IndicatorShortName('Clean Trading Sessions');
+    
+    //--- calculate trading session times
+    CalculateTradingSessions();
+    
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+    //--- iterate through each bar
+    for(int i = prev_calculated; i < rates_total; i++)
+    {
+        //--- check if current time is within a trading session
+        if(IsLondonTradingSession(time[i]))
+        {
+            UpBuffer[i] = high[i];
+            DownBuffer[i] = low[i];
+            NeutralBuffer[i] = close[i];
+        }
+        else if(IsNewYorkTradingSession(time[i]))
+        {
+            UpBuffer[i] = high[i];
+            DownBuffer[i] = low[i];
+            NeutralBuffer[i] = close[i];
+        }
+        else if(IsTokyoTradingSession(time[i]))
+        {
+            UpBuffer[i] = high[i];
+            DownBuffer[i] = low[i];
+            NeutralBuffer[i] = close[i];
+        }
+        else
+        {
+            UpBuffer[i] = 0;
+            DownBuffer[i] = 0;
+            NeutralBuffer[i] = 0;
+        }
+    }
+    
+    return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Calculate trading sessions                                       |
+//+------------------------------------------------------------------+
+void CalculateTradingSessions()
+{
+    //--- calculate London trading session times
+    LondonOpen = D'08:00';
+    LondonClose = D'16:00';
+    
+    //--- calculate New York trading session times
+    NewYorkOpen = D'13:00';
+    NewYorkClose = D'21:00';
+    
+    //--- calculate Tokyo trading session times
+    TokyoOpen = D'00:00';
+    TokyoClose = D'08:00';
+}
+
+//+------------------------------------------------------------------+
+//| Check if current time is within London trading session           |
+//+------------------------------------------------------------------+
+bool IsLondonTradingSession(const datetime &time)
+{
+    return (time >= LondonOpen && time < LondonClose);
+}
+
+//+------------------------------------------------------------------+
+//| Check if current time is within New York trading session         |
+//+------------------------------------------------------------------+
+bool IsNewYorkTradingSession(const datetime &time)
+{
+    return (time >= NewYorkOpen && time < NewYorkClose);
+}
+
+//+------------------------------------------------------------------+
+//| Check if current time is within Tokyo trading session            |
+//+------------------------------------------------------------------+
+bool IsTokyoTradingSession(const datetime &time)
+{
+    return (time >= TokyoOpen && time < TokyoClose);
+}
